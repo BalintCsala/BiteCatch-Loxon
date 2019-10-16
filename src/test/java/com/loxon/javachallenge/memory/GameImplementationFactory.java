@@ -23,6 +23,10 @@ public class GameImplementationFactory {
             private int rounds;
             private int currentRound = 0;
             
+            private boolean isIndexValid(int index) {
+                return index >= 0 && index < memory.size();
+            }
+            
             @Override
             public Player registerPlayer(String name) {
                 Player player = new Player(name);
@@ -40,8 +44,18 @@ public class GameImplementationFactory {
             @Override
             public List<Response> nextRound(Command... requests) {
                 ArrayList<Response> responses = new ArrayList<>();
+                ArrayList<String> handledPlayers = new ArrayList<>();
                 for (Command command : requests) {
                     Player player = command.getPlayer();
+                    // Nincs regisztrálva
+                    if (!players.contains(player))
+                        continue;
+                    
+                    // Már volt egy kérése
+                    if (handledPlayers.contains(player.getName()))
+                        continue;
+                    handledPlayers.add(player.getName());
+                    
                     if (command instanceof CommandStats) {
                         ResponseStats resp = new ResponseStats(player);
                         resp.setCellCount(memory.size());
@@ -85,10 +99,12 @@ public class GameImplementationFactory {
                         responses.add(resp);
                     } else if (command instanceof CommandScan) {
                         int cell = ((CommandScan) command).getCell();
+                        if (!isIndexValid(cell) || !isIndexValid(cell + 3))
+                            continue;
                         ArrayList<MemoryState> states = new ArrayList<>();
                         for (int i = 0; i < 4; i++) {
                             MemoryState state = memory.get(cell + i);
-                            if (owners[cell + i].equals(player.getName()))
+                            if (player.getName().equals(owners[cell + i]))
                                 state = state == MemoryState.ALLOCATED ? 
                                         MemoryState.OWNED_ALLOCATED : MemoryState.OWNED_FORTIFIED;
                             states.add(state);
@@ -98,7 +114,11 @@ public class GameImplementationFactory {
                     } else if (command instanceof CommandAllocate) {
                         List<Integer> cells = ((CommandAllocate) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
-                        for (int cell : cells) {
+                        for (Integer cell : cells) {
+                            if (cell == null)
+                                continue;
+                            if (!isIndexValid(cell))
+                                continue;
                             MemoryState state = memory.get(cell);
                             if(state == MemoryState.FREE) {
                                 memory.set(cell, MemoryState.ALLOCATED);
@@ -115,6 +135,8 @@ public class GameImplementationFactory {
                         List<Integer> cells = ((CommandFree) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
                         for (int cell : cells) {
+                            if (!isIndexValid(cell))
+                                continue;
                             MemoryState state = memory.get(cell);
                             if (state == MemoryState.ALLOCATED || state == MemoryState.CORRUPT) {
                                 memory.set(cell, MemoryState.FREE);
@@ -127,7 +149,9 @@ public class GameImplementationFactory {
                     } else if (command instanceof CommandRecover) {
                         List<Integer> cells = ((CommandRecover) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
-                        for (int cell : cells) {
+                        for (Integer cell : cells) {
+                            if (cell == null)
+                                continue;
                             MemoryState state = memory.get(cell);
                             if (state == MemoryState.CORRUPT) {
                                 memory.set(cell, MemoryState.ALLOCATED);
@@ -143,7 +167,9 @@ public class GameImplementationFactory {
                     } else if (command instanceof CommandFortify) {
                         List<Integer> cells = ((CommandFortify) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
-                        for (int cell : cells) {
+                        for (Integer cell : cells) {
+                            if (cell == null)
+                                continue;
                             MemoryState state = memory.get(cell);
                             if (state == MemoryState.ALLOCATED) {
                                 memory.set(cell, MemoryState.FORTIFIED);
@@ -157,6 +183,8 @@ public class GameImplementationFactory {
                         ArrayList<Integer> successCells = new ArrayList<>();
                         int cell1 = ((CommandSwap) command).getCells().get(0);
                         int cell2 = ((CommandSwap) command).getCells().get(1);
+                        if (!isIndexValid(cell1) || !isIndexValid(cell2))
+                            continue;
                         MemoryState state1 = memory.get(cell1);
                         MemoryState state2 = memory.get(cell2);
                         if (state1 != MemoryState.SYSTEM && state1 != MemoryState.FORTIFIED &&
@@ -190,11 +218,11 @@ public class GameImplementationFactory {
                 
                 for (int i = 0; i < memory.size() / 4; i++) {
                     String firstOwner = owners[i * 4];
-                    boolean ownedByTheSame = true;
+                    boolean ownedByTheSame = firstOwner != null;
                     // Blokkon belűl
                     for (int j = 0; j < 4; j++) {
                         String owner = owners[i * 4 + j];
-                        if (!owner.equals(firstOwner)) {
+                        if (firstOwner == null || !firstOwner.equals(owner)) {
                             ownedByTheSame = false;
                         }
                         if (owner != null) {
