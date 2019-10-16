@@ -16,8 +16,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/MemoryRules.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="219">
-              <caret line="501" selection-start-line="501" selection-end-line="501" />
+            <state relative-caret-position="168">
+              <caret line="187" selection-start-line="187" selection-end-line="187" />
             </state>
           </provider>
         </entry>
@@ -30,12 +30,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/GameImplementationFactory.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
-              <caret line="311" column="81" selection-start-line="311" selection-start-column="81" selection-end-line="311" selection-end-column="81" />
+            <state relative-caret-position="151">
+              <caret line="150" column="46" selection-start-line="150" selection-start-column="46" selection-end-line="150" selection-end-column="46" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#997#998#0" expanded="true" />
-                <element signature="e#1070#1071#0" expanded="true" />
+                <element signature="e#879#880#0" expanded="true" />
+                <element signature="e#970#971#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -95,6 +95,7 @@
       <find>CommandSwap</find>
       <find>CommandFor</find>
       <find>getRemai</find>
+      <find>CommandAllo</find>
       <find>testHack</find>
     </findStrings>
   </component>
@@ -203,7 +204,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1571247576189" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1571248484712" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
@@ -245,34 +246,34 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 29m 46s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 39m 12s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 30m 32s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 41m 56s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 32m 04s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 43m 29s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 32m 42s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 45m 22s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 33m 02s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 45m 32s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 34m 50s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 48m 00s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 36m 00s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 48m 22s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 36m 52s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 48m 59s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 37m 14s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 53m 21s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 19h 38m 30s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 53m 50s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
   </component>
@@ -363,19 +364,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/MemoryRules.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="219">
-          <caret line="501" selection-start-line="501" selection-end-line="501" />
+        <state relative-caret-position="168">
+          <caret line="187" selection-start-line="187" selection-end-line="187" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/GameImplementationFactory.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="311" column="81" selection-start-line="311" selection-start-column="81" selection-end-line="311" selection-end-column="81" />
+        <state relative-caret-position="151">
+          <caret line="150" column="46" selection-start-line="150" selection-start-column="46" selection-end-line="150" selection-end-column="46" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#997#998#0" expanded="true" />
-            <element signature="e#1070#1071#0" expanded="true" />
+            <element signature="e#879#880#0" expanded="true" />
+            <element signature="e#970#971#0" expanded="true" />
           </folding>
         </state>
       </provider>

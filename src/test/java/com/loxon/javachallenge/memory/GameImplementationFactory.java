@@ -19,8 +19,8 @@ public class GameImplementationFactory {
             private int rounds;
             private int currentRound = 1;
             
-            private boolean isIndexValid(int index) {
-                return index >= 0 && index < memory.size();
+            private boolean isIndexValid(Integer index) {
+                return index == null || index >= 0 && index < memory.size();
             }
             
             @Override
@@ -80,7 +80,7 @@ public class GameImplementationFactory {
                         continue;
                     handledPlayers.add(player.getName());
                     
-                    if (command instanceof CommandStats) {
+                    if (command instanceof CommandStats) {                                      // STATS
                         ResponseStats resp = new ResponseStats(player);
                         resp.setCellCount(memory.size());
                         int owned = 0;
@@ -121,7 +121,7 @@ public class GameImplementationFactory {
                         resp.setSystemCells(system);
                         resp.setRemainingRounds(rounds - currentRound);
                         responses.add(resp);
-                    } else if (command instanceof CommandScan) {
+                    } else if (command instanceof CommandScan) {                                // SCAN
                         int cell = ((CommandScan) command).getCell();
                         if (!isIndexValid(cell)) {
                             responses.add(new ResponseScan(player, -1, Collections.emptyList()));
@@ -142,9 +142,35 @@ public class GameImplementationFactory {
                         }
                         ResponseScan resp = new ResponseScan(player, cell, states);
                         responses.add(resp);
-                    } else if (command instanceof CommandAllocate) {
+                    } else if (command instanceof CommandAllocate) {                            // ALLOCATE
                         List<Integer> cells = ((CommandAllocate) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
+                        
+                        boolean anyInvalid = false;
+                        if (cells.size() > 2)
+                            anyInvalid = true;
+                        
+                        for (Integer cell : cells) {
+                            if (!isIndexValid(cell)) {
+                                anyInvalid = true;
+                                break;
+                            }
+                        }
+                        
+                        int block = cells.get(0) / 4;
+                        for (Integer cell : cells) {
+                            // Nem ugyanaz a blokk
+                            if (cell == null || cell / 4 != block) {
+                                anyInvalid = true;
+                                break;
+                            }
+                        }
+
+                        if (anyInvalid) {
+                            responses.add(new ResponseSuccessList(player, successCells));
+                            continue;
+                        }
+                        
                         for (Integer cell : cells) {
                             if (multipleAccesses.contains(cell)) {
                                 memory.set(cell, MemoryState.CORRUPT);
@@ -153,8 +179,6 @@ public class GameImplementationFactory {
                                 continue;
                             }
                             if (cell == null)
-                                continue;
-                            if (!isIndexValid(cell))
                                 continue;
                             MemoryState state = memory.get(cell);
                             if(state == MemoryState.FREE) {
@@ -171,6 +195,12 @@ public class GameImplementationFactory {
                     } else if (command instanceof CommandFree) {
                         List<Integer> cells = ((CommandFree) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
+                        
+                        if (cells.size() > 2) { 
+                            responses.add(new ResponseSuccessList(player, successCells));
+                            continue;
+                        }
+                        
                         for (Integer cell : cells) {
                             if (cell == null)
                                 continue;
@@ -200,12 +230,20 @@ public class GameImplementationFactory {
                         for (Integer cell : cells) {
                             if (cell == null)
                                 continue;
+                            
+                            if (multipleAccesses.contains(cell)) {
+                                memory.set(cell, MemoryState.CORRUPT);
+                                owners[cell] = null;
+                                
+                                continue;
+                            }
+                            
                             MemoryState state = memory.get(cell);
                             if (state == MemoryState.CORRUPT) {
                                 memory.set(cell, MemoryState.ALLOCATED);
                                 owners[cell] = player.getName();
                                 successCells.add(cell);
-                            } else if (state == MemoryState.ALLOCATED || owners[cell] != null) {
+                            } else if (state == MemoryState.ALLOCATED || state == MemoryState.FREE || owners[cell] != null) {
                                 memory.set(cell, MemoryState.CORRUPT);
                                 owners[cell] = null;
                             }
