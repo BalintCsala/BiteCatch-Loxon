@@ -18,11 +18,22 @@ public class GameImplementationFactory {
             private String[] owners;
             private int rounds;
             private int currentRound = 1;
-            
-            private boolean isIndexValid(Integer index) {
-                return index == null || index >= 0 && index < memory.size();
+
+            private boolean isIndexInvalid(Integer index) {
+                return index == null || index < 0 || index >= memory.size();
             }
-            
+
+            private boolean checkAndExecuteMultipleAccess(int cell, ArrayList<Integer> multipleAccesses) {
+                if (multipleAccesses.contains(cell)) {
+                    if (memory.get(cell) != MemoryState.FORTIFIED) {
+                        memory.set(cell, MemoryState.CORRUPT);
+                        owners[cell] = null;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
             @Override
             public Player registerPlayer(String name) {
                 Player player = new Player(name);
@@ -42,6 +53,7 @@ public class GameImplementationFactory {
                 ArrayList<Response> responses = new ArrayList<>();
                 ArrayList<String> handledPlayers = new ArrayList<>();
                 
+                // A többször módosított cellák összegyűjtése
                 ArrayList<Integer> modifiedCells = new ArrayList<>();
                 ArrayList<Integer> multipleAccesses = new ArrayList<>();
                 for (Command command : requests) {
@@ -57,6 +69,7 @@ public class GameImplementationFactory {
                     } else if (command instanceof CommandSwap) {
                         cells = ((CommandSwap) command).getCells();
                     }
+                    
                     for (Integer cell : cells) {
                         if (cell != null) {
                             if (modifiedCells.contains(cell)) {
@@ -68,258 +81,42 @@ public class GameImplementationFactory {
                     }
                 }
                 
-                
+                // Újrarendezés, hogy a scan commandok a végén legyenek
+                ArrayList<Command> commands = new ArrayList<>();
                 for (Command command : requests) {
+                    if (command instanceof CommandScan) {
+                        commands.add(command);
+                    } else {
+                        commands.add(0, command);
+                    }
+                }
+                
+                // Az egy körben megkapott utasítások végrehajtása
+                for (Command command : commands) {
                     Player player = command.getPlayer();
                     // Nincs regisztrálva
                     if (!players.contains(player))
                         continue;
-                    
+
                     // Már volt egy kérése
                     if (handledPlayers.contains(player.getName()))
                         continue;
                     handledPlayers.add(player.getName());
-                    
-                    if (command instanceof CommandStats) {                                      // STATS
-                        ResponseStats resp = new ResponseStats(player);
-                        resp.setCellCount(memory.size());
-                        int owned = 0;
-                        int free = 0;
-                        int allocated = 0;
-                        int corrupt = 0;
-                        int fortified = 0;
-                        int system = 0;
-                        for (MemoryState state : memory) {
-                            switch (state) {
-                                case FREE:
-                                    free++;
-                                    break;
-                                case ALLOCATED:
-                                    allocated++;
-                                    break;
-                                case CORRUPT:
-                                    corrupt++;
-                                    break;
-                                case FORTIFIED:
-                                    fortified++;
-                                    break;
-                                case SYSTEM:
-                                    system++;
-                                    break;
-                            }
-                        }
-                        for (String owner : owners) {
-                            if (player.getName().equals(owner))
-                                owned++;
-                        }
-                        
-                        resp.setOwnedCells(owned);
-                        resp.setFreeCells(free);
-                        resp.setAllocatedCells(allocated);
-                        resp.setCorruptCells(corrupt);
-                        resp.setFortifiedCells(fortified);
-                        resp.setSystemCells(system);
-                        resp.setRemainingRounds(rounds - currentRound);
-                        responses.add(resp);
-                    } else if (command instanceof CommandScan) {                                // SCAN
-                        int cell = ((CommandScan) command).getCell();
-                        if (!isIndexValid(cell)) {
-                            responses.add(new ResponseScan(player, -1, Collections.emptyList()));
-                            continue;
-                        }
-                        
-                        cell = (cell / 4) * 4;
-                        
-                        ArrayList<MemoryState> states = new ArrayList<>();
-                        for (int i = 0; i < 4; i++) {
-                            MemoryState state = memory.get(cell + i);
-                            if (player.getName().equals(owners[cell + i])) {
-                                if (state == MemoryState.ALLOCATED)
-                                    state = MemoryState.OWNED_ALLOCATED;
-                                if (state == MemoryState.FORTIFIED)
-                                    state = MemoryState.OWNED_FORTIFIED;
-                            }
-                            states.add(state);
-                        }
-                        ResponseScan resp = new ResponseScan(player, cell, states);
-                        responses.add(resp);
-                    } else if (command instanceof CommandAllocate) {                            // ALLOCATE
-                        List<Integer> cells = ((CommandAllocate) command).getCells();
-                        ArrayList<Integer> successCells = new ArrayList<>();
-                        
-                        boolean anyInvalid = false;
-                        if (cells.size() > 2)
-                            anyInvalid = true;
-                        
-                        for (Integer cell : cells) {
-                            if (!isIndexValid(cell)) {
-                                anyInvalid = true;
-                                break;
-                            }
-                        }
-                        
-                        int block = cells.get(0) / 4;
-                        for (Integer cell : cells) {
-                            // Nem ugyanaz a blokk
-                            if (cell == null || cell / 4 != block) {
-                                anyInvalid = true;
-                                break;
-                            }
-                        }
 
-                        if (anyInvalid) {
-                            responses.add(new ResponseSuccessList(player, successCells));
-                            continue;
-                        }
-                        
-                        for (Integer cell : cells) {
-                            if (multipleAccesses.contains(cell) && memory.get(cell) != MemoryState.FORTIFIED) {
-                                memory.set(cell, MemoryState.CORRUPT);
-                                owners[cell] = null;
-                                
-                                continue;
-                            }
-                            if (cell == null)
-                                continue;
-                            MemoryState state = memory.get(cell);
-                            if(state == MemoryState.FREE) {
-                                memory.set(cell, MemoryState.ALLOCATED);
-                                owners[cell] = player.getName();
-                                successCells.add(cell);
-                            } else if (state == MemoryState.ALLOCATED) {
-                                memory.set(cell, MemoryState.CORRUPT);
-                                owners[cell] = null;
-                            }
-                        }
-                        ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                        responses.add(resp);
-                    } else if (command instanceof CommandFree) {                                // FREE
-                        List<Integer> cells = ((CommandFree) command).getCells();
-                        ArrayList<Integer> successCells = new ArrayList<>();
-                        
-                        if (cells.size() > 2) { 
-                            responses.add(new ResponseSuccessList(player, successCells));
-                            continue;
-                        }
-                        
-                        for (Integer cell : cells) {
-                            if (cell == null)
-                                continue;
-
-                            if (multipleAccesses.contains(cell) && memory.get(cell) != MemoryState.FORTIFIED) {
-                                memory.set(cell, MemoryState.CORRUPT);
-                                owners[cell] = null;
-
-                                continue;
-                            }
-                            
-                            if (!isIndexValid(cell))
-                                continue;
-                            MemoryState state = memory.get(cell);
-                            if (state == MemoryState.ALLOCATED || state == MemoryState.CORRUPT 
-                                    || state == MemoryState.FREE) {
-                                memory.set(cell, MemoryState.FREE);
-                                owners[cell] = null;
-                                successCells.add(cell);
-                            }
-                        }
-                        ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                        responses.add(resp);
-                    } else if (command instanceof CommandRecover) {                             // RECOVER
-                        List<Integer> cells = ((CommandRecover) command).getCells();
-                        ArrayList<Integer> successCells = new ArrayList<>();
-                        for (Integer cell : cells) {
-                            if (cell == null)
-                                continue;
-                            
-                            if (multipleAccesses.contains(cell) && memory.get(cell) != MemoryState.FORTIFIED) {
-                                memory.set(cell, MemoryState.CORRUPT);
-                                owners[cell] = null;
-                                
-                                continue;
-                            }
-                            
-                            MemoryState state = memory.get(cell);
-                            if (state == MemoryState.CORRUPT) {
-                                memory.set(cell, MemoryState.ALLOCATED);
-                                owners[cell] = player.getName();
-                                successCells.add(cell);
-                            } else if (state == MemoryState.ALLOCATED || state == MemoryState.FREE || owners[cell] != null) {
-                                memory.set(cell, MemoryState.CORRUPT);
-                                owners[cell] = null;
-                            }
-                        }
-                        ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                        responses.add(resp);
-                    } else if (command instanceof CommandFortify) {                            // FORTIFY
-                        List<Integer> cells = ((CommandFortify) command).getCells();
-                        ArrayList<Integer> successCells = new ArrayList<>();
-                        for (Integer cell : cells) {
-                            if (multipleAccesses.contains(cell) && memory.get(cell) != MemoryState.FORTIFIED) {
-                                memory.set(cell, MemoryState.CORRUPT);
-                                owners[cell] = null;
-                                continue;
-                            }
-                            
-                            if (cell == null)
-                                continue;
-                            MemoryState state = memory.get(cell);
-                            if (state == MemoryState.ALLOCATED) {
-                                memory.set(cell, MemoryState.FORTIFIED);
-                                successCells.add(cell);
-                            }
-                        }
-                        ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                        responses.add(resp);
-                    } else if (command instanceof CommandSwap) {                                // SWAP
-                        List<Integer> cells = ((CommandSwap) command).getCells();
-                        ArrayList<Integer> successCells = new ArrayList<>();
-                        
-                        if (cells.size() != 2) {
-                            ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                            responses.add(resp);
-                            continue;
-                        }
-                        
-                        Integer cell1 = cells.get(0);
-                        Integer cell2 = cells.get(1);
-                        
-                        if (cell1 == null || cell2 == null) {
-                            ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                            responses.add(resp);
-                            continue;
-                        }
-                        
-                        if (multipleAccesses.contains(cell1) || multipleAccesses.contains(cell2)) {
-                            if (memory.get(cell1) != MemoryState.FORTIFIED)
-                                memory.set(cell1, MemoryState.CORRUPT);
-                            if (memory.get(cell2) != MemoryState.FORTIFIED)
-                                memory.set(cell2, MemoryState.CORRUPT);
-                            ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                            responses.add(resp);
-                            continue;
-                        }
-                        
-                        if (!isIndexValid(cell1) || !isIndexValid(cell2)) {
-                            ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                            responses.add(resp);
-                            continue;
-                        }
-                        
-                        MemoryState state1 = memory.get(cell1);
-                        MemoryState state2 = memory.get(cell2);
-                        if (state1 != MemoryState.SYSTEM && state1 != MemoryState.FORTIFIED &&
-                                state2 != MemoryState.SYSTEM && state2 != MemoryState.FORTIFIED) {
-                            String tempName = owners[cell1];
-                            owners[cell1] = owners[cell2];
-                            owners[cell2] = tempName;
-                            memory.set(cell1, state2);
-                            memory.set(cell2, state1);
-                            successCells.add(cell1);
-                            successCells.add(cell2);
-                        }
-                        ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
-                        responses.add(resp);
+                    if (command instanceof CommandStats) {
+                        responses.add(executeStats(player));
+                    } else if (command instanceof CommandScan) {
+                        responses.add(executeScan((CommandScan) command, player));
+                    } else if (command instanceof CommandAllocate) {
+                        responses.add(executeAllocate((CommandAllocate) command, player, multipleAccesses));
+                    } else if (command instanceof CommandFree) {
+                        responses.add(executeFree((CommandFree) command, player, multipleAccesses));
+                    } else if (command instanceof CommandRecover) {
+                        responses.add(executeRecover((CommandRecover) command, player, multipleAccesses));
+                    } else if (command instanceof CommandFortify) {
+                        responses.add(executeFortify((CommandFortify) command, player, multipleAccesses));
+                    } else if (command instanceof CommandSwap) {
+                        responses.add(executeSwap((CommandSwap) command, player, multipleAccesses));
                     }
                 }
                 currentRound++;
@@ -337,7 +134,7 @@ public class GameImplementationFactory {
                     score.setTotalScore(0);
                     scores.put(player.getName(), score);
                 }
-                
+
                 for (int i = 0; i < memory.size() / 4; i++) {
                     String firstOwner = owners[i * 4];
                     boolean ownedByTheSame = firstOwner != null;
@@ -387,6 +184,207 @@ public class GameImplementationFactory {
                 builder.append("\n");
                 return builder.toString();
             }
+            
+            private ResponseStats executeStats(Player player) {
+                ResponseStats resp = new ResponseStats(player);
+                resp.setCellCount(memory.size());
+                int owned = 0;
+                int free = 0;
+                int allocated = 0;
+                int corrupt = 0;
+                int fortified = 0;
+                int system = 0;
+                for (MemoryState state : memory) {
+                    switch (state) {
+                        case FREE:
+                            free++;
+                            break;
+                        case ALLOCATED:
+                            allocated++;
+                            break;
+                        case CORRUPT:
+                            corrupt++;
+                            break;
+                        case FORTIFIED:
+                            fortified++;
+                            break;
+                        case SYSTEM:
+                            system++;
+                            break;
+                    }
+                }
+                for (String owner : owners) {
+                    if (player.getName().equals(owner))
+                        owned++;
+                }
+
+                resp.setOwnedCells(owned);
+                resp.setFreeCells(free);
+                resp.setAllocatedCells(allocated);
+                resp.setCorruptCells(corrupt);
+                resp.setFortifiedCells(fortified);
+                resp.setSystemCells(system);
+                resp.setRemainingRounds(rounds - currentRound);
+                return resp;
+            }
+            
+            private ResponseScan executeScan(CommandScan command, Player player) {
+                int cell = command.getCell();
+                if (isIndexInvalid(cell)) {
+                    return new ResponseScan(player, -1, Collections.emptyList());
+                }
+
+                cell = (cell / 4) * 4;
+
+                ArrayList<MemoryState> states = new ArrayList<>();
+                for (int i = 0; i < 4; i++) {
+                    MemoryState state = memory.get(cell + i);
+                    if (player.getName().equals(owners[cell + i])) {
+                        if (state == MemoryState.ALLOCATED)
+                            state = MemoryState.OWNED_ALLOCATED;
+                        if (state == MemoryState.FORTIFIED)
+                            state = MemoryState.OWNED_FORTIFIED;
+                    }
+                    states.add(state);
+                }
+                return new ResponseScan(player, cell, states);
+            }
+            
+            private ResponseSuccessList executeAllocate(CommandAllocate command, Player player, ArrayList<Integer> multipleAccesses) {
+                List<Integer> cells = command.getCells();
+                ArrayList<Integer> successCells = new ArrayList<>();
+
+                boolean anyInvalid = false;
+                if (cells.size() > 2)
+                    anyInvalid = true;
+
+                int block = cells.get(0) / 4;
+                for (Integer cell : cells) {
+                    // Nem ugyanaz a blokk
+                    if (isIndexInvalid(cell) || cell / 4 != block) {
+                        anyInvalid = true;
+                        break;
+                    }
+                }
+
+                if (anyInvalid)
+                    return new ResponseSuccessList(player, successCells);
+
+                for (Integer cell : cells) {
+                    if (isIndexInvalid(cell) || checkAndExecuteMultipleAccess(cell, multipleAccesses))
+                        continue;
+                    
+                    MemoryState state = memory.get(cell);
+                    if(state == MemoryState.FREE) {
+                        memory.set(cell, MemoryState.ALLOCATED);
+                        owners[cell] = player.getName();
+                        successCells.add(cell);
+                    } else if (state == MemoryState.ALLOCATED) {
+                        memory.set(cell, MemoryState.CORRUPT);
+                        owners[cell] = null;
+                    }
+                }
+                return new ResponseSuccessList(player, successCells);
+            }
+            
+            private ResponseSuccessList executeFree(CommandFree command, Player player, ArrayList<Integer> multipleAccesses) {
+                List<Integer> cells = command.getCells();
+                ArrayList<Integer> successCells = new ArrayList<>();
+
+                if (cells.size() > 2)
+                    return new ResponseSuccessList(player, successCells);
+
+                for (Integer cell : cells) {
+                    if (isIndexInvalid(cell) || checkAndExecuteMultipleAccess(cell, multipleAccesses))
+                        continue;
+                    
+                    MemoryState state = memory.get(cell);
+                    if (state == MemoryState.ALLOCATED || state == MemoryState.CORRUPT
+                            || state == MemoryState.FREE) {
+                        memory.set(cell, MemoryState.FREE);
+                        owners[cell] = null;
+                        successCells.add(cell);
+                    }
+                }
+                return new ResponseSuccessList(player, successCells);
+            }
+            
+            private ResponseSuccessList executeRecover(CommandRecover command, Player player, ArrayList<Integer> multipleAccesses) {
+                List<Integer> cells = command.getCells();
+                ArrayList<Integer> successCells = new ArrayList<>();
+
+                if (cells.size() > 2)
+                    return new ResponseSuccessList(player, successCells);
+                
+                for (Integer cell : cells) {
+                    if (isIndexInvalid(cell) || checkAndExecuteMultipleAccess(cell, multipleAccesses))
+                        continue;
+
+                    MemoryState state = memory.get(cell);
+                    if (state == MemoryState.CORRUPT) {
+                        memory.set(cell, MemoryState.ALLOCATED);
+                        owners[cell] = player.getName();
+                        successCells.add(cell);
+                    } else if (state == MemoryState.ALLOCATED || state == MemoryState.FREE || owners[cell] != null) {
+                        memory.set(cell, MemoryState.CORRUPT);
+                        owners[cell] = null;
+                    }
+                }
+                return new ResponseSuccessList(player, successCells);
+            }
+            
+            private ResponseSuccessList executeFortify(CommandFortify command, Player player, ArrayList<Integer> multipleAccesses) {
+                List<Integer> cells = command.getCells();
+                ArrayList<Integer> successCells = new ArrayList<>();
+                for (Integer cell : cells) {
+                    if (isIndexInvalid(cell) || checkAndExecuteMultipleAccess(cell, multipleAccesses))
+                        continue;
+
+                    MemoryState state = memory.get(cell);
+                    if (state == MemoryState.ALLOCATED) {
+                        memory.set(cell, MemoryState.FORTIFIED);
+                        successCells.add(cell);
+                    }
+                }
+                return new ResponseSuccessList(player, successCells);
+            }
+            
+            private ResponseSuccessList executeSwap(CommandSwap command, Player player, ArrayList<Integer> multipleAccesses) {
+                List<Integer> cells = command.getCells();
+                ArrayList<Integer> successCells = new ArrayList<>();
+
+                if (cells.size() != 2)
+                    return new ResponseSuccessList(player, successCells);
+
+                Integer cell1 = cells.get(0);
+                Integer cell2 = cells.get(1);
+
+                if (isIndexInvalid(cell1) || isIndexInvalid(cell2))
+                    return new ResponseSuccessList(player, successCells);
+
+                if (multipleAccesses.contains(cell1) || multipleAccesses.contains(cell2)) {
+                    if (memory.get(cell1) != MemoryState.FORTIFIED)
+                        memory.set(cell1, MemoryState.CORRUPT);
+                    if (memory.get(cell2) != MemoryState.FORTIFIED)
+                        memory.set(cell2, MemoryState.CORRUPT);
+                    return new ResponseSuccessList(player, successCells);
+                }
+
+                MemoryState state1 = memory.get(cell1);
+                MemoryState state2 = memory.get(cell2);
+                if (state1 != MemoryState.SYSTEM && state1 != MemoryState.FORTIFIED &&
+                        state2 != MemoryState.SYSTEM && state2 != MemoryState.FORTIFIED) {
+                    String tempName = owners[cell1];
+                    owners[cell1] = owners[cell2];
+                    owners[cell2] = tempName;
+                    memory.set(cell1, state2);
+                    memory.set(cell2, state1);
+                    successCells.add(cell1);
+                    successCells.add(cell2);
+                }
+                return new ResponseSuccessList(player, successCells);
+            }
+            
         };
     }
 }
