@@ -8,11 +8,7 @@ import com.loxon.javachallenge.memory.api.communication.commands.*;
 import com.loxon.javachallenge.memory.api.communication.general.Command;
 import com.loxon.javachallenge.memory.api.communication.general.Response;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class GameImplementationFactory {
     public static Game get() {
@@ -21,7 +17,7 @@ public class GameImplementationFactory {
             private List<MemoryState> memory;
             private String[] owners;
             private int rounds;
-            private int currentRound = 0;
+            private int currentRound = 1;
             
             private boolean isIndexValid(int index) {
                 return index >= 0 && index < memory.size();
@@ -113,7 +109,7 @@ public class GameImplementationFactory {
                             }
                         }
                         for (String owner : owners) {
-                            if (owner != null)
+                            if (player.getName().equals(owner))
                                 owned++;
                         }
                         
@@ -127,9 +123,13 @@ public class GameImplementationFactory {
                         responses.add(resp);
                     } else if (command instanceof CommandScan) {
                         int cell = ((CommandScan) command).getCell();
-                        cell = (cell / 4) * 4;
-                        if (!isIndexValid(cell) || !isIndexValid(cell + 3))
+                        if (!isIndexValid(cell)) {
+                            responses.add(new ResponseScan(player, -1, Collections.emptyList()));
                             continue;
+                        }
+                        
+                        cell = (cell / 4) * 4;
+                        
                         ArrayList<MemoryState> states = new ArrayList<>();
                         for (int i = 0; i < 4; i++) {
                             MemoryState state = memory.get(cell + i);
@@ -229,6 +229,13 @@ public class GameImplementationFactory {
                     } else if (command instanceof CommandSwap) {
                         List<Integer> cells = ((CommandSwap) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
+                        
+                        if (cells.size() != 2) {
+                            ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
+                            responses.add(resp);
+                            continue;
+                        }
+                        
                         Integer cell1 = cells.get(0);
                         Integer cell2 = cells.get(1);
                         
@@ -246,8 +253,11 @@ public class GameImplementationFactory {
                             continue;
                         }
                         
-                        if (!isIndexValid(cell1) || !isIndexValid(cell2))
+                        if (!isIndexValid(cell1) || !isIndexValid(cell2)) {
+                            ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
+                            responses.add(resp);
                             continue;
+                        }
                         
                         MemoryState state1 = memory.get(cell1);
                         MemoryState state2 = memory.get(cell2);
@@ -266,6 +276,7 @@ public class GameImplementationFactory {
                         responses.add(resp);
                     }
                 }
+                currentRound++;
                 return responses;
             }
 
@@ -292,12 +303,13 @@ public class GameImplementationFactory {
                         }
                         if (owner != null) {
                             PlayerScore score =  scores.get(owners[i * 4 + j]);
+                            score.setOwnedCells(score.getOwnedCells() + 1);
                             switch (memory.get(i * 4 + j)) {
                                 case ALLOCATED:
-                                    score.setOwnedCells(score.getOwnedCells() + 1);
                                     score.setTotalScore(score.getTotalScore() + 1);
                                     break;
                                 case FORTIFIED:
+                                    score.setTotalScore(score.getTotalScore() + 1);
                                     score.setFortifiedCells(score.getFortifiedCells() + 1);
                                     break;
                             }
@@ -314,7 +326,20 @@ public class GameImplementationFactory {
 
             @Override
             public String visualize() {
-                return "";
+                StringBuilder builder = new StringBuilder("\n\n");
+                for (int i = 0; i < memory.size(); i++) {
+                    MemoryState state = memory.get(i);
+                    builder.append(i);
+                    builder.append(": ");
+                    builder.append(state.toString());
+                    builder.append("(");
+                    builder.append(owners[i] == null ? "null" : owners[i]);
+                    builder.append("), ");
+                    if (i % 8 == 7)
+                        builder.append("\n");
+                }
+                builder.append("\n");
+                return builder.toString();
             }
         };
     }
