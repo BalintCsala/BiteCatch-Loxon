@@ -133,11 +133,12 @@ public class GameImplementationFactory {
                         ArrayList<MemoryState> states = new ArrayList<>();
                         for (int i = 0; i < 4; i++) {
                             MemoryState state = memory.get(cell + i);
-                            if (player.getName().equals(owners[cell + i]))
-                                if (state == MemoryState.ALLOCATED) 
+                            if (player.getName().equals(owners[cell + i])) {
+                                if (state == MemoryState.ALLOCATED)
                                     state = MemoryState.OWNED_ALLOCATED;
                                 if (state == MemoryState.FORTIFIED)
                                     state = MemoryState.OWNED_FORTIFIED;
+                            }
                             states.add(state);
                         }
                         ResponseScan resp = new ResponseScan(player, cell, states);
@@ -172,7 +173,7 @@ public class GameImplementationFactory {
                         }
                         
                         for (Integer cell : cells) {
-                            if (multipleAccesses.contains(cell)) {
+                            if (multipleAccesses.contains(cell) && memory.get(cell) != MemoryState.FORTIFIED) {
                                 memory.set(cell, MemoryState.CORRUPT);
                                 owners[cell] = null;
                                 
@@ -192,7 +193,7 @@ public class GameImplementationFactory {
                         }
                         ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
                         responses.add(resp);
-                    } else if (command instanceof CommandFree) {
+                    } else if (command instanceof CommandFree) {                                // FREE
                         List<Integer> cells = ((CommandFree) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
                         
@@ -205,7 +206,7 @@ public class GameImplementationFactory {
                             if (cell == null)
                                 continue;
 
-                            if (multipleAccesses.contains(cell)) {
+                            if (multipleAccesses.contains(cell) && memory.get(cell) != MemoryState.FORTIFIED) {
                                 memory.set(cell, MemoryState.CORRUPT);
                                 owners[cell] = null;
 
@@ -224,14 +225,14 @@ public class GameImplementationFactory {
                         }
                         ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
                         responses.add(resp);
-                    } else if (command instanceof CommandRecover) {
+                    } else if (command instanceof CommandRecover) {                             // RECOVER
                         List<Integer> cells = ((CommandRecover) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
                         for (Integer cell : cells) {
                             if (cell == null)
                                 continue;
                             
-                            if (multipleAccesses.contains(cell)) {
+                            if (multipleAccesses.contains(cell) && memory.get(cell) != MemoryState.FORTIFIED) {
                                 memory.set(cell, MemoryState.CORRUPT);
                                 owners[cell] = null;
                                 
@@ -250,10 +251,16 @@ public class GameImplementationFactory {
                         }
                         ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
                         responses.add(resp);
-                    } else if (command instanceof CommandFortify) {
+                    } else if (command instanceof CommandFortify) {                            // FORTIFY
                         List<Integer> cells = ((CommandFortify) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
                         for (Integer cell : cells) {
+                            if (multipleAccesses.contains(cell) && memory.get(cell) != MemoryState.FORTIFIED) {
+                                memory.set(cell, MemoryState.CORRUPT);
+                                owners[cell] = null;
+                                continue;
+                            }
+                            
                             if (cell == null)
                                 continue;
                             MemoryState state = memory.get(cell);
@@ -264,7 +271,7 @@ public class GameImplementationFactory {
                         }
                         ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
                         responses.add(resp);
-                    } else if (command instanceof CommandSwap) {
+                    } else if (command instanceof CommandSwap) {                                // SWAP
                         List<Integer> cells = ((CommandSwap) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
                         
@@ -284,8 +291,10 @@ public class GameImplementationFactory {
                         }
                         
                         if (multipleAccesses.contains(cell1) || multipleAccesses.contains(cell2)) {
-                            memory.set(cell1, MemoryState.CORRUPT);
-                            memory.set(cell2, MemoryState.CORRUPT);
+                            if (memory.get(cell1) != MemoryState.FORTIFIED)
+                                memory.set(cell1, MemoryState.CORRUPT);
+                            if (memory.get(cell2) != MemoryState.FORTIFIED)
+                                memory.set(cell2, MemoryState.CORRUPT);
                             ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
                             responses.add(resp);
                             continue;
@@ -299,7 +308,6 @@ public class GameImplementationFactory {
                         
                         MemoryState state1 = memory.get(cell1);
                         MemoryState state2 = memory.get(cell2);
-                        System.out.println(state1.toString() + "   " + state2.toString());
                         if (state1 != MemoryState.SYSTEM && state1 != MemoryState.FORTIFIED &&
                                 state2 != MemoryState.SYSTEM && state2 != MemoryState.FORTIFIED) {
                             String tempName = owners[cell1];
