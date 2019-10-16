@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1762de5d-209c-4fbe-9834-a668edc67327" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/GameImplementationFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/GameImplementationFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/loxon/javachallenge/memory/api/communication/commands/ResponseScan.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/loxon/javachallenge/memory/api/communication/commands/ResponseScan.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/loxon/javachallenge/memory/api/communication/commands/ResponseStats.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/loxon/javachallenge/memory/api/communication/commands/ResponseStats.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/loxon/javachallenge/memory/GameImplementationFactory.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/loxon/javachallenge/memory/GameImplementationFactory.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/loxon/javachallenge/memory/MemoryRules.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/loxon/javachallenge/memory/MemoryRules.class" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -19,11 +13,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/MemoryRules.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="331">
-              <caret line="158" column="28" lean-forward="true" selection-start-line="158" selection-start-column="28" selection-end-line="158" selection-end-column="28" />
+            <state relative-caret-position="229">
+              <caret line="341" selection-start-line="341" selection-end-line="341" />
             </state>
           </provider>
         </entry>
@@ -33,16 +27,16 @@
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/GameImplementationFactory.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="188">
-              <caret line="186" column="37" selection-start-line="186" selection-start-column="37" selection-end-line="186" selection-end-column="37" />
+            <state relative-caret-position="345">
+              <caret line="225" column="25" lean-forward="true" selection-start-line="225" selection-start-column="25" selection-end-line="225" selection-end-column="25" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#997#998#0" expanded="true" />
                 <element signature="e#1070#1071#0" expanded="true" />
-                <element signature="e#12781#12782#0" expanded="true" />
+                <element signature="e#15969#15970#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -98,7 +92,10 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>testHa</find>
+      <find>CommandFree</find>
+      <find>CommandSwap</find>
       <find>testHack</find>
+      <find>CommandFor</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -107,6 +104,7 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/MemoryRules.java" />
         <option value="$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/GameImplementationFactory.java" />
       </list>
     </option>
@@ -204,7 +202,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1571244184265" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1571246257720" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
@@ -246,34 +244,34 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 31m 37s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 06m 07s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 32m 45s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 08m 07s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 36m 36s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 09m 00s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 38m 27s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 10m 07s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 39m 16s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 10m 27s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 41m 23s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 11m 20s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 41m 41s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 13m 39s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 41m 58s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 14m 27s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 42m 14s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 14m 52s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="MemoryRules - 2019.10.16 at 18h 42m 42s.xml">
+    <history-entry file="MemoryRules - 2019.10.16 at 19h 15m 27s.xml">
       <configuration name="MemoryRules" configurationId="JUnit" />
     </history-entry>
   </component>
@@ -355,23 +353,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/GameImplementationFactory.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/loxon/javachallenge/memory/api/communication/commands/ResponseSuccessList.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="188">
-          <caret line="186" column="37" selection-start-line="186" selection-start-column="37" selection-end-line="186" selection-end-column="37" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#997#998#0" expanded="true" />
-            <element signature="e#1070#1071#0" expanded="true" />
-            <element signature="e#12781#12782#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="119">
+          <caret line="11" column="13" selection-start-line="11" selection-start-column="13" selection-end-line="11" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/MemoryRules.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="331">
-          <caret line="158" column="28" lean-forward="true" selection-start-line="158" selection-start-column="28" selection-end-line="158" selection-end-column="28" />
+        <state relative-caret-position="229">
+          <caret line="341" selection-start-line="341" selection-end-line="341" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/com/loxon/javachallenge/memory/GameImplementationFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="225" column="25" lean-forward="true" selection-start-line="225" selection-start-column="25" selection-end-line="225" selection-end-column="25" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#997#998#0" expanded="true" />
+            <element signature="e#1070#1071#0" expanded="true" />
+            <element signature="e#15969#15970#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

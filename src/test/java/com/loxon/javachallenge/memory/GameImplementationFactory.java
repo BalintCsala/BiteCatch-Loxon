@@ -45,6 +45,34 @@ public class GameImplementationFactory {
             public List<Response> nextRound(Command... requests) {
                 ArrayList<Response> responses = new ArrayList<>();
                 ArrayList<String> handledPlayers = new ArrayList<>();
+                
+                ArrayList<Integer> modifiedCells = new ArrayList<>();
+                ArrayList<Integer> multipleAccesses = new ArrayList<>();
+                for (Command command : requests) {
+                    List<Integer> cells = new ArrayList<>();
+                    if (command instanceof CommandAllocate) {
+                        cells = ((CommandAllocate) command).getCells();
+                    } else if (command instanceof CommandFree) {
+                        cells = ((CommandFree) command).getCells();
+                    } else if (command instanceof CommandRecover) {
+                        cells = ((CommandRecover) command).getCells();
+                    } else if (command instanceof CommandFortify) {
+                        cells = ((CommandFortify) command).getCells();
+                    } else if (command instanceof CommandSwap) {
+                        cells = ((CommandSwap) command).getCells();
+                    }
+                    for (Integer cell : cells) {
+                        if (cell != null) {
+                            if (modifiedCells.contains(cell)) {
+                                multipleAccesses.add(cell);
+                                continue;
+                            }
+                            modifiedCells.add(cell);
+                        }
+                    }
+                }
+                
+                
                 for (Command command : requests) {
                     Player player = command.getPlayer();
                     // Nincs regisztrálva
@@ -99,14 +127,17 @@ public class GameImplementationFactory {
                         responses.add(resp);
                     } else if (command instanceof CommandScan) {
                         int cell = ((CommandScan) command).getCell();
+                        cell = (cell / 4) * 4;
                         if (!isIndexValid(cell) || !isIndexValid(cell + 3))
                             continue;
                         ArrayList<MemoryState> states = new ArrayList<>();
                         for (int i = 0; i < 4; i++) {
                             MemoryState state = memory.get(cell + i);
                             if (player.getName().equals(owners[cell + i]))
-                                state = state == MemoryState.ALLOCATED ? 
-                                        MemoryState.OWNED_ALLOCATED : MemoryState.OWNED_FORTIFIED;
+                                if (state == MemoryState.ALLOCATED) 
+                                    state = MemoryState.OWNED_ALLOCATED;
+                                if (state == MemoryState.FORTIFIED)
+                                    state = MemoryState.OWNED_FORTIFIED;
                             states.add(state);
                         }
                         ResponseScan resp = new ResponseScan(player, cell, states);
@@ -115,6 +146,12 @@ public class GameImplementationFactory {
                         List<Integer> cells = ((CommandAllocate) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
                         for (Integer cell : cells) {
+                            if (multipleAccesses.contains(cell)) {
+                                memory.set(cell, MemoryState.CORRUPT);
+                                owners[cell] = null;
+                                
+                                continue;
+                            }
                             if (cell == null)
                                 continue;
                             if (!isIndexValid(cell))
@@ -134,11 +171,22 @@ public class GameImplementationFactory {
                     } else if (command instanceof CommandFree) {
                         List<Integer> cells = ((CommandFree) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
-                        for (int cell : cells) {
+                        for (Integer cell : cells) {
+                            if (cell == null)
+                                continue;
+
+                            if (multipleAccesses.contains(cell)) {
+                                memory.set(cell, MemoryState.CORRUPT);
+                                owners[cell] = null;
+
+                                continue;
+                            }
+                            
                             if (!isIndexValid(cell))
                                 continue;
                             MemoryState state = memory.get(cell);
-                            if (state == MemoryState.ALLOCATED || state == MemoryState.CORRUPT) {
+                            if (state == MemoryState.ALLOCATED || state == MemoryState.CORRUPT 
+                                    || state == MemoryState.FREE) {
                                 memory.set(cell, MemoryState.FREE);
                                 owners[cell] = null;
                                 successCells.add(cell);
@@ -181,16 +229,33 @@ public class GameImplementationFactory {
                     } else if (command instanceof CommandSwap) {
                         List<Integer> cells = ((CommandSwap) command).getCells();
                         ArrayList<Integer> successCells = new ArrayList<>();
-                        int cell1 = ((CommandSwap) command).getCells().get(0);
-                        int cell2 = ((CommandSwap) command).getCells().get(1);
+                        Integer cell1 = cells.get(0);
+                        Integer cell2 = cells.get(1);
+                        
+                        if (cell1 == null || cell2 == null) {
+                            ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
+                            responses.add(resp);
+                            continue;
+                        }
+                        
+                        if (multipleAccesses.contains(cell1) || multipleAccesses.contains(cell2)) {
+                            memory.set(cell1, MemoryState.CORRUPT);
+                            memory.set(cell2, MemoryState.CORRUPT);
+                            ResponseSuccessList resp = new ResponseSuccessList(player, successCells);
+                            responses.add(resp);
+                            continue;
+                        }
+                        
                         if (!isIndexValid(cell1) || !isIndexValid(cell2))
                             continue;
+                        
                         MemoryState state1 = memory.get(cell1);
                         MemoryState state2 = memory.get(cell2);
+                        System.out.println(state1.toString() + "   " + state2.toString());
                         if (state1 != MemoryState.SYSTEM && state1 != MemoryState.FORTIFIED &&
                                 state2 != MemoryState.SYSTEM && state2 != MemoryState.FORTIFIED) {
                             String tempName = owners[cell1];
-                            owners[cell2] = owners[cell1];
+                            owners[cell1] = owners[cell2];
                             owners[cell2] = tempName;
                             memory.set(cell1, state2);
                             memory.set(cell2, state1);
